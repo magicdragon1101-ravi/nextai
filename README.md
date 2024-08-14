@@ -29,7 +29,3 @@
 
 - NextAI is your go-to companion for all things Next.js. You can now ask any questions related to Next.js with the confidence of the official documentation.
 - To ensure the information is always up to date, a cron job runs daily to refresh the data.
-
-## Author
-
-- Enzo Bacqueyrisses &ensp;<a href="https://twitter.com/bacqueyrisses"><img src="https://skillicons.dev/icons?i=twitter" style="width: 15px; height: auto;" alt="Enzo Bacqueyrisses Twitter Account" /></a>&ensp;<a href="https://www.linkedin.com/in/bacqueyrisses/"><img src="https://skillicons.dev/icons?i=linkedin" style="width: 15px; height: auto;" alt="Enzo Bacqueyrisses Linkedin Account" /></a>&ensp;<a href="https://www.enzo.codes"><img src="https://github.com/bacqueyrisses/photography/assets/96829831/e5f7eff7-690b-429d-aa2f-e3c66c53630e" style="width: 15px; height: auto;" alt="Enzo Bacqueyrisses Portfolio" /></a>
