@@ -1,29 +1,29 @@
-import { NextRequest, NextResponse } from 'next/server'
-import axios from 'axios'
-import { join } from 'path'
-import { createClient } from '@supabase/supabase-js'
-import { createHash } from 'crypto'
-import dotenv from 'dotenv'
-import { ObjectExpression } from 'estree'
-import GithubSlugger from 'github-slugger'
-import { Content, Root } from 'mdast'
-import { fromMarkdown } from 'mdast-util-from-markdown'
-import { mdxFromMarkdown, MdxjsEsm } from 'mdast-util-mdx'
-import { toMarkdown } from 'mdast-util-to-markdown'
-import { toString } from 'mdast-util-to-string'
-import { mdxjs } from 'micromark-extension-mdxjs'
-import 'openai'
-import { Configuration, OpenAIApi } from 'openai'
-import { u } from 'unist-builder'
-import { filter } from 'unist-util-filter'
-import { inspect } from 'util'
+import { NextRequest, NextResponse } from 'next/server';
+import axios from 'axios';
+import { join } from 'path';
+import { createClient } from '@supabase/supabase-js';
+import { createHash } from 'crypto';
+import dotenv from 'dotenv';
+import { ObjectExpression } from 'estree';
+import GithubSlugger from 'github-slugger';
+import { Content, Root } from 'mdast';
+import { fromMarkdown } from 'mdast-util-from-markdown';
+import { mdxFromMarkdown, MdxjsEsm } from 'mdast-util-mdx';
+import { toMarkdown } from 'mdast-util-to-markdown';
+import { toString } from 'mdast-util-to-string';
+import { mdxjs } from 'micromark-extension-mdxjs';
+import 'openai';
+import { Configuration, OpenAIApi } from 'openai';
+import { u } from 'unist-builder';
+import { filter } from 'unist-util-filter';
+import { inspect } from 'util';
 
-dotenv.config()
+dotenv.config();
 
 type GithubFile = {
-  type: 'file' | 'dir'
-  name: string
-}
+  type: 'file' | 'dir';
+  name: string;
+};
 
 /**
  * Extracts ES literals from an `estree` `ObjectExpression`
@@ -39,23 +39,24 @@ export async function GET(req: NextRequest) {
       Record<string, string | number | bigint | true | RegExp | undefined>
     >((object, property) => {
       if (property.type !== 'Property') {
-        return object
+        return object;
       }
 
       const key =
-        (property.key.type === 'Identifier' && property.key.name) || undefined
+        (property.key.type === 'Identifier' && property.key.name) || undefined;
       const value =
-        (property.value.type === 'Literal' && property.value.value) || undefined
+        (property.value.type === 'Literal' && property.value.value) ||
+        undefined;
 
       if (!key) {
-        return object
+        return object;
       }
 
       return {
         ...object,
         [key]: value,
-      }
-    }, {})
+      };
+    }, {});
   }
 
   /**
@@ -72,11 +73,11 @@ export async function GET(req: NextRequest) {
         node.data.estree.body[0].declaration.declarations[0]?.id.type ===
           'Identifier' &&
         node.data.estree.body[0].declaration.declarations[0].id.name === 'meta'
-      )
-    })
+      );
+    });
 
     if (!metaExportNode) {
-      return undefined
+      return undefined;
     }
 
     const objectExpression =
@@ -91,13 +92,13 @@ export async function GET(req: NextRequest) {
         metaExportNode.data.estree.body[0].declaration.declarations[0].init
           ?.type === 'ObjectExpression' &&
         metaExportNode.data.estree.body[0].declaration.declarations[0].init) ||
-      undefined
+      undefined;
 
     if (!objectExpression) {
-      return undefined
+      return undefined;
     }
 
-    return getObjectFromExpression(objectExpression)
+    return getObjectFromExpression(objectExpression);
   }
 
   /**
@@ -109,31 +110,31 @@ export async function GET(req: NextRequest) {
    */
   function splitTreeBy(tree: Root, predicate: (node: Content) => boolean) {
     return tree.children.reduce<Root[]>((trees, node) => {
-      const [lastTree] = trees.slice(-1)
+      const [lastTree] = trees.slice(-1);
 
       if (!lastTree || predicate(node)) {
-        const tree: Root = u('root', [node])
-        return trees.concat(tree)
+        const tree: Root = u('root', [node]);
+        return trees.concat(tree);
       }
 
-      lastTree.children.push(node)
-      return trees
-    }, [])
+      lastTree.children.push(node);
+      return trees;
+    }, []);
   }
 
-  type Meta = ReturnType<typeof extractMetaExport>
+  type Meta = ReturnType<typeof extractMetaExport>;
 
   type Section = {
-    content: string
-    heading?: string
-    slug?: string
-  }
+    content: string;
+    heading?: string;
+    slug?: string;
+  };
 
   type ProcessedMdx = {
-    checksum: string
-    meta: Meta
-    sections: Section[]
-  }
+    checksum: string;
+    meta: Meta;
+    sections: Section[];
+  };
 
   /**
    * Processes MDX content for search indexing.
@@ -141,15 +142,15 @@ export async function GET(req: NextRequest) {
    * and splits it into sub-sections based on criteria.
    */
   function processMdxForSearch(content: string): ProcessedMdx {
-    if (content) content = content.replace(/(title:\s*)<([^>]+)>/g, '$1$2')
+    if (content) content = content.replace(/(title:\s*)<([^>]+)>/g, '$1$2');
 
-    const checksum = createHash('sha256').update(content).digest('base64')
+    const checksum = createHash('sha256').update(content).digest('base64');
     const mdxTree = fromMarkdown(content, {
       extensions: [mdxjs()],
       mdastExtensions: [mdxFromMarkdown()],
-    })
+    });
 
-    const meta = extractMetaExport(mdxTree)
+    const meta = extractMetaExport(mdxTree);
 
     // Remove all MDX elements from markdown
     const mdTree = filter(
@@ -162,46 +163,46 @@ export async function GET(req: NextRequest) {
           'mdxFlowExpression',
           'mdxTextExpression',
         ].includes(node.type)
-    )
+    );
 
     if (!mdTree) {
       return {
         checksum,
         meta,
         sections: [],
-      }
+      };
     }
 
-    const sectionTrees = splitTreeBy(mdTree, (node) => node.type === 'heading')
+    const sectionTrees = splitTreeBy(mdTree, (node) => node.type === 'heading');
 
-    const slugger = new GithubSlugger()
+    const slugger = new GithubSlugger();
 
     const sections = sectionTrees.map((tree) => {
-      let [firstNode] = tree.children
+      let [firstNode] = tree.children;
 
       const heading =
-        firstNode.type === 'heading' ? toString(firstNode) : undefined
+        firstNode.type === 'heading' ? toString(firstNode) : undefined;
 
-      const slug = heading ? slugger.slug(heading) : undefined
+      const slug = heading ? slugger.slug(heading) : undefined;
 
       return {
         content: toMarkdown(tree),
         heading: heading,
         slug,
-      }
-    })
+      };
+    });
 
     return {
       checksum,
       meta,
       sections,
-    }
+    };
   }
 
   type WalkEntry = {
-    path: string
-    parentPath?: string
-  }
+    path: string;
+    parentPath?: string;
+  };
 
   async function walk(dir: string, parentPath?: string): Promise<WalkEntry[]> {
     const response = await axios.get(
@@ -215,41 +216,41 @@ export async function GET(req: NextRequest) {
           Expires: '0',
         },
       }
-    )
+    );
 
-    const files: GithubFile[] = response.data
+    const files: GithubFile[] = response.data;
     const entries = await Promise.all(
       files.map(async (file) => {
-        const path = join(dir, file.name)
+        const path = join(dir, file.name);
         if (file.type === 'dir' && file.name === '03-pages') {
           // Skip the "03-pages" subdirectory
-          return []
+          return [];
         } else if (file.type === 'dir') {
-          return walk(path, parentPath)
+          return walk(path, parentPath);
         } else if (file.type === 'file' && /\.mdx?$/.test(file.name)) {
           return [
             {
               path: path,
               parentPath,
             },
-          ]
+          ];
         } else {
-          return []
+          return [];
         }
       })
-    )
+    );
 
     const flattenedFiles = entries.reduce(
       (all, folderContents) => all.concat(folderContents),
       []
-    )
-    return flattenedFiles.sort((a, b) => a.path.localeCompare(b.path))
+    );
+    return flattenedFiles.sort((a, b) => a.path.localeCompare(b.path));
   }
 
   abstract class BaseEmbeddingSource {
-    checksum?: string
-    meta?: Meta
-    sections?: Section[]
+    checksum?: string;
+    meta?: Meta;
+    sections?: Section[];
 
     constructor(
       public source: string,
@@ -258,53 +259,53 @@ export async function GET(req: NextRequest) {
     ) {}
 
     abstract load(): Promise<{
-      checksum: string
-      meta?: Meta
-      sections: Section[]
-    }>
+      checksum: string;
+      meta?: Meta;
+      sections: Section[];
+    }>;
   }
 
   class GithubEmbeddingSource extends BaseEmbeddingSource {
-    type: 'github' = 'github'
+    type: 'github' = 'github';
 
     constructor(
       source: string,
       public filePath: string,
       public parentFilePath?: string
     ) {
-      const path = filePath.replace(/^docs/, '').replace(/\.mdx?$/, '')
+      const path = filePath.replace(/^docs/, '').replace(/\.mdx?$/, '');
       const parentPath = parentFilePath
         ?.replace(/^docs/, '')
-        .replace(/\.mdx?$/, '')
+        .replace(/\.mdx?$/, '');
 
-      super(source, path, parentPath)
+      super(source, path, parentPath);
     }
 
     async load() {
       const response = await axios.get(
         `https://raw.githubusercontent.com/vercel/next.js/canary/${this.filePath}`
-      )
+      );
 
-      const contents = response.data
+      const contents = response.data;
 
-      const { checksum, meta, sections } = processMdxForSearch(contents)
+      const { checksum, meta, sections } = processMdxForSearch(contents);
 
-      this.checksum = checksum
-      this.meta = meta
-      this.sections = sections
+      this.checksum = checksum;
+      this.meta = meta;
+      this.sections = sections;
 
       return {
         checksum,
         meta,
         sections,
-      }
+      };
     }
   }
 
-  type EmbeddingSource = GithubEmbeddingSource
+  type EmbeddingSource = GithubEmbeddingSource;
 
   async function generateEmbeddings() {
-    const shouldRefresh = false
+    const shouldRefresh = false;
 
     if (
       !process.env.NEXT_PUBLIC_SUPABASE_URL ||
@@ -313,7 +314,7 @@ export async function GET(req: NextRequest) {
     ) {
       return console.log(
         'Environment variables NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, and OPENAI_KEY are required: skipping embeddings generation'
-      )
+      );
     }
 
     const supabaseClient = createClient(
@@ -325,46 +326,46 @@ export async function GET(req: NextRequest) {
           autoRefreshToken: false,
         },
       }
-    )
+    );
 
     if (shouldRefresh) {
-      console.log('Refresh flag set, deleting existing data...')
+      console.log('Refresh flag set, deleting existing data...');
       const { error: deletePageSectionError } = await supabaseClient
         .from('nods_page_section')
-        .delete()
+        .delete();
       if (deletePageSectionError) {
-        throw deletePageSectionError
+        throw deletePageSectionError;
       }
 
       const { error: deletePageError } = await supabaseClient
         .from('nods_page')
-        .delete()
+        .delete();
       if (deletePageError) {
-        throw deletePageError
+        throw deletePageError;
       }
     } else {
-      console.log('Checking which pages are new or have changed')
+      console.log('Checking which pages are new or have changed');
     }
 
     const embeddingSources: EmbeddingSource[] = [
       ...(await walk('docs'))
         .filter(({ path }) => /\.mdx?$/.test(path))
         .map((entry) => new GithubEmbeddingSource('guide', entry.path)),
-    ]
+    ];
 
-    console.log(`Discovered ${embeddingSources.length} pages`)
+    console.log(`Discovered ${embeddingSources.length} pages`);
 
     if (!shouldRefresh) {
-      console.log('Checking which pages are new or have changed')
+      console.log('Checking which pages are new or have changed');
     } else {
-      console.log('Refresh flag set, re-generating all pages')
+      console.log('Refresh flag set, re-generating all pages');
     }
 
     for (const embeddingSource of embeddingSources) {
-      const { type, source, path, parentPath } = embeddingSource
+      const { type, source, path, parentPath } = embeddingSource;
 
       try {
-        const { checksum, meta, sections } = await embeddingSource.load()
+        const { checksum, meta, sections } = await embeddingSource.load();
 
         // Check for existing page in DB and compare checksums
         const { error: fetchPageError, data: existingPage } =
@@ -373,69 +374,69 @@ export async function GET(req: NextRequest) {
             .select('id, path, checksum, parentPage:parent_page_id(id, path)')
             .filter('path', 'eq', path)
             .limit(1)
-            .maybeSingle()
+            .maybeSingle();
 
         if (fetchPageError) {
-          throw fetchPageError
+          throw fetchPageError;
         }
 
-        type Singular<T> = T extends any[] ? undefined : T
+        type Singular<T> = T extends any[] ? undefined : T;
 
         // We use checksum to determine if this page & its sections need to be regenerated
         if (!shouldRefresh && existingPage?.checksum === checksum) {
           const existingParentPage =
             existingPage?.parentPage as unknown as Singular<
               typeof existingPage.parentPage
-            >
+            >;
 
           // If parent page changed, update it
           // @ts-ignore */
           if (existingParentPage?.path !== parentPath) {
             console.log(
               `[${path}] Parent page has changed. Updating to '${parentPath}'...`
-            )
+            );
             const { error: fetchParentPageError, data: parentPage } =
               await supabaseClient
                 .from('nods_page')
                 .select()
                 .filter('path', 'eq', parentPath)
                 .limit(1)
-                .maybeSingle()
+                .maybeSingle();
 
             if (fetchParentPageError) {
-              throw fetchParentPageError
+              throw fetchParentPageError;
             }
 
             const { error: updatePageError } = await supabaseClient
               .from('nods_page')
               .update({ parent_page_id: parentPage?.id })
-              .filter('id', 'eq', existingPage.id)
+              .filter('id', 'eq', existingPage.id);
 
             if (updatePageError) {
-              throw updatePageError
+              throw updatePageError;
             }
           }
-          continue
+          continue;
         }
 
         if (existingPage) {
           if (!shouldRefresh) {
             console.log(
               `[${path}] Docs have changed, removing old page sections and their embeddings`
-            )
+            );
           } else {
             console.log(
               `[${path}] Refresh flag set, removing old page sections and their embeddings`
-            )
+            );
           }
 
           const { error: deletePageSectionError } = await supabaseClient
             .from('nods_page_section')
             .delete()
-            .filter('page_id', 'eq', existingPage.id)
+            .filter('page_id', 'eq', existingPage.id);
 
           if (deletePageSectionError) {
-            throw deletePageSectionError
+            throw deletePageSectionError;
           }
         }
 
@@ -445,10 +446,10 @@ export async function GET(req: NextRequest) {
             .select()
             .filter('path', 'eq', parentPath)
             .limit(1)
-            .maybeSingle()
+            .maybeSingle();
 
         if (fetchParentPageError) {
-          throw fetchParentPageError
+          throw fetchParentPageError;
         }
 
         // Create/update page record. Intentionally clear checksum until we
@@ -468,35 +469,35 @@ export async function GET(req: NextRequest) {
           )
           .select()
           .limit(1)
-          .single()
+          .single();
 
         if (upsertPageError) {
-          throw upsertPageError
+          throw upsertPageError;
         }
 
         console.log(
           `[${path}] Adding ${sections.length} page sections (with embeddings)`
-        )
+        );
         for (const { slug, heading, content } of sections) {
           // OpenAI recommends replacing newlines with spaces for best results (specific to embeddings)
-          const input = content.replace(/\n/g, ' ')
+          const input = content.replace(/\n/g, ' ');
 
           try {
             const configuration = new Configuration({
               apiKey: process.env.OPENAI_KEY,
-            })
-            const openai = new OpenAIApi(configuration)
+            });
+            const openai = new OpenAIApi(configuration);
 
             const embeddingResponse = await openai.createEmbedding({
               model: 'text-embedding-ada-002',
               input,
-            })
+            });
 
             if (embeddingResponse.status !== 200) {
-              throw new Error(inspect(embeddingResponse.data, false, 2))
+              throw new Error(inspect(embeddingResponse.data, false, 2));
             }
 
-            const [responseData] = embeddingResponse.data.data
+            const [responseData] = embeddingResponse.data.data;
 
             const { error: insertPageSectionError, data: pageSection } =
               await supabaseClient
@@ -511,10 +512,10 @@ export async function GET(req: NextRequest) {
                 })
                 .select()
                 .limit(1)
-                .single()
+                .single();
 
             if (insertPageSectionError) {
-              throw insertPageSectionError
+              throw insertPageSectionError;
             }
           } catch (err) {
             // TODO: decide how to better handle failed embeddings
@@ -523,9 +524,9 @@ export async function GET(req: NextRequest) {
                 0,
                 40
               )}...'`
-            )
+            );
 
-            throw err
+            throw err;
           }
         }
 
@@ -533,31 +534,31 @@ export async function GET(req: NextRequest) {
         const { error: updatePageError } = await supabaseClient
           .from('nods_page')
           .update({ checksum })
-          .filter('id', 'eq', page.id)
+          .filter('id', 'eq', page.id);
 
         if (updatePageError) {
-          throw updatePageError
+          throw updatePageError;
         }
       } catch (err) {
         console.error(
           `Page '${path}' or one/multiple of its page sections failed to store properly. Page has been marked with null checksum to indicate that it needs to be re-generated.`
-        )
-        console.error(err)
+        );
+        console.error(err);
       }
     }
 
-    console.log('Embedding generation complete')
+    console.log('Embedding generation complete');
   }
 
   async function main() {
-    await generateEmbeddings()
+    await generateEmbeddings();
   }
 
   try {
-    await main()
-    return new NextResponse('Embeddings generated successfully.')
+    await main();
+    return new NextResponse('Embeddings generated successfully.');
   } catch (error) {
-    console.log(error)
-    return new NextResponse('Embeddings generation failed.')
+    console.log(error);
+    return new NextResponse('Embeddings generation failed.');
   }
 }

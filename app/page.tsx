@@ -1,5 +1,5 @@
-import Container from '@/components/ui/Container'
-import SearchBox from '@/components/SearchBox'
+import Container from '@/components/ui/Container';
+import SearchBox from '@/components/SearchBox';
 
 function SearchContainer() {
   return (
@@ -33,7 +33,7 @@ function SearchContainer() {
         </div>
       </Container>
     </>
-  )
+  );
 }
 
 export default async function Home() {
@@ -47,13 +47,13 @@ export default async function Home() {
               <div
                 data-orientation="vertical"
                 role="none"
-                className="mx-2 h-4 w-[1px] shrink-0 bg-stone-300"
+                className="w-[1px] mx-2 h-4 shrink-0 bg-stone-300"
               ></div>{' '}
               <span className="text-neutral-800">
                 Up to date with Next.JS 14
               </span>
             </div>
-            <h1 className="font-display text-3xl font-medium tracking-tight text-neutral-950 [text-wrap:balance] sm:text-7xl">
+            <h1 className="[text-wrap:balance] font-display text-3xl font-medium tracking-tight text-neutral-950 sm:text-7xl">
               The AI-Powered <br />{' '}
               <span className={'whitespace-nowrap'}>Next.JS Documentation</span>
             </h1>
@@ -68,5 +68,5 @@ export default async function Home() {
       </Container>
       <SearchContainer />
     </>
-  )
+  );
 }
