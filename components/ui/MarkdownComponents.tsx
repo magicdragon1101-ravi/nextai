@@ -1,7 +1,7 @@
-'use client'
-import * as React from 'react'
-import { CodeBlock } from '@/components/ui/CodeBlock'
-import Image from 'next/image'
+'use client';
+import * as React from 'react';
+import { CodeBlock } from '@/components/ui/CodeBlock';
+import Image from 'next/image';
 
 export const markdownComponents = {
   mono: (props: any) => <code className="text-sm">{props.children}</code>,
@@ -27,6 +27,6 @@ export const markdownComponents = {
           alt={'code snippet next AI'}
         />
       </span>
-    )
+    );
   },
-}
+};

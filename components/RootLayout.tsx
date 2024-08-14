@@ -1,15 +1,15 @@
-'use client'
+'use client';
 
-import { useId, useRef, useState } from 'react'
-import Link from 'next/link'
-import { usePathname } from 'next/navigation'
-import { motion, MotionConfig, useReducedMotion } from 'framer-motion'
-import logo from '@/public/images/logo.webp'
+import { useId, useRef, useState } from 'react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { motion, MotionConfig, useReducedMotion } from 'framer-motion';
+import logo from '@/public/images/logo.webp';
 
-import Container from '@/components/ui/Container'
-import GridPattern from '@/components/GridPattern'
-import Image from 'next/image'
-import Footer from '@/components/Footer'
+import Container from '@/components/ui/Container';
+import GridPattern from '@/components/GridPattern';
+import Image from 'next/image';
+import Footer from '@/components/Footer';
 
 function Header() {
   return (
@@ -63,16 +63,16 @@ function Header() {
         </div>
       </div>
     </Container>
-  )
+  );
 }
 
 function RootLayoutInner({ children }: { children: React.ReactNode }) {
-  let panelId = useId()
-  let [expanded, setExpanded] = useState(false)
-  let openRef = useRef()
-  let closeRef = useRef()
-  let navRef = useRef()
-  let shouldReduceMotion = useReducedMotion()
+  let panelId = useId();
+  let [expanded, setExpanded] = useState(false);
+  let openRef = useRef();
+  let closeRef = useRef();
+  let navRef = useRef();
+  let shouldReduceMotion = useReducedMotion();
 
   return (
     <MotionConfig transition={shouldReduceMotion ? { duration: 0 } : undefined}>
@@ -117,7 +117,7 @@ function RootLayoutInner({ children }: { children: React.ReactNode }) {
           className="relative isolate flex w-full flex-col pt-9"
         >
           <GridPattern
-            className="absolute inset-x-0 -top-14 -z-10 h-[1000px] w-full fill-neutral-50 stroke-neutral-950/5 [mask-image:linear-gradient(to_bottom_left,white_40%,transparent_50%)]"
+            className="h-[1000px] [mask-image:linear-gradient(to_bottom_left,white_40%,transparent_50%)] absolute inset-x-0 -top-14 -z-10 w-full fill-neutral-50 stroke-neutral-950/5"
             yOffset={-96}
             interactive
           />
@@ -128,14 +128,14 @@ function RootLayoutInner({ children }: { children: React.ReactNode }) {
         </motion.div>
       </motion.div>
     </MotionConfig>
-  )
+  );
 }
 
 export default function RootLayout({
   children,
 }: {
-  children: React.ReactNode
+  children: React.ReactNode;
 }) {
-  let pathname = usePathname()
-  return <RootLayoutInner key={pathname}>{children}</RootLayoutInner>
+  let pathname = usePathname();
+  return <RootLayoutInner key={pathname}>{children}</RootLayoutInner>;
 }

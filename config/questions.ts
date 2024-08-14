@@ -1,7 +1,7 @@
 type Question = {
-  id: number
-  description: string
-}
+  id: number;
+  description: string;
+};
 export const questions: Question[] = [
   {
     id: 1,
@@ -19,4 +19,4 @@ export const questions: Question[] = [
     id: 4,
     description: 'How to create a POST endpoint?',
   },
-]
+];

@@ -1,10 +1,10 @@
-import '@/styles/globals.css'
-import RootLayout from '@/components/RootLayout'
+import '@/styles/globals.css';
+import RootLayout from '@/components/RootLayout';
 
 export const metadata = {
   title: 'NextAI',
   description: 'The Next.js AI Doc Search',
-}
+};
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   return (
@@ -18,5 +18,5 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         <RootLayout>{children}</RootLayout>
       </body>
     </html>
-  )
+  );
 }

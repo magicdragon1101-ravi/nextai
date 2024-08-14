@@ -1,23 +1,23 @@
-'use client'
-import * as React from 'react'
-import { Children, useState } from 'react'
-import * as CopyToClipboard from 'react-copy-to-clipboard'
-import { Light as SyntaxHighlighter } from 'react-syntax-highlighter'
-import { markdownTheme } from '@/config/markdown-theme'
+'use client';
+import * as React from 'react';
+import { Children, useState } from 'react';
+import * as CopyToClipboard from 'react-copy-to-clipboard';
+import { Light as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { markdownTheme } from '@/config/markdown-theme';
 
-import js from 'react-syntax-highlighter/dist/cjs/languages/hljs/javascript'
-import ts from 'react-syntax-highlighter/dist/cjs/languages/hljs/typescript'
-import csharp from 'react-syntax-highlighter/dist/cjs/languages/hljs/csharp'
-import py from 'react-syntax-highlighter/dist/cjs/languages/hljs/python'
-import sql from 'react-syntax-highlighter/dist/cjs/languages/hljs/sql'
-import bash from 'react-syntax-highlighter/dist/cjs/languages/hljs/bash'
-import dart from 'react-syntax-highlighter/dist/cjs/languages/hljs/dart'
-import json from 'react-syntax-highlighter/dist/cjs/languages/hljs/json'
-import kotlin from 'react-syntax-highlighter/dist/cjs/languages/hljs/kotlin'
-import { Copy, CopyCheck } from 'lucide-react'
+import js from 'react-syntax-highlighter/dist/cjs/languages/hljs/javascript';
+import ts from 'react-syntax-highlighter/dist/cjs/languages/hljs/typescript';
+import csharp from 'react-syntax-highlighter/dist/cjs/languages/hljs/csharp';
+import py from 'react-syntax-highlighter/dist/cjs/languages/hljs/python';
+import sql from 'react-syntax-highlighter/dist/cjs/languages/hljs/sql';
+import bash from 'react-syntax-highlighter/dist/cjs/languages/hljs/bash';
+import dart from 'react-syntax-highlighter/dist/cjs/languages/hljs/dart';
+import json from 'react-syntax-highlighter/dist/cjs/languages/hljs/json';
+import kotlin from 'react-syntax-highlighter/dist/cjs/languages/hljs/kotlin';
+import { Copy, CopyCheck } from 'lucide-react';
 
 export interface CodeBlockProps {
-  title?: string
+  title?: string;
   language:
     | 'js'
     | 'jsx'
@@ -28,13 +28,13 @@ export interface CodeBlockProps {
     | 'dart'
     | 'json'
     | 'csharp'
-    | 'kotlin'
-  linesToHighlight?: number[]
-  hideCopy?: boolean
-  hideLineNumbers?: boolean
-  className?: string
-  value?: string
-  children?: string
+    | 'kotlin';
+  linesToHighlight?: number[];
+  hideCopy?: boolean;
+  hideLineNumbers?: boolean;
+  className?: string;
+  value?: string;
+  children?: string;
 }
 
 export const CodeBlock = ({
@@ -47,55 +47,56 @@ export const CodeBlock = ({
   hideCopy = false,
   hideLineNumbers = false,
 }: CodeBlockProps) => {
-  const isDarkMode = true
-  const theme = markdownTheme(isDarkMode)
+  const isDarkMode = true;
+  const theme = markdownTheme(isDarkMode);
 
-  const [copied, setCopied] = useState(false)
+  const [copied, setCopied] = useState(false);
 
   const handleCopy = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
-    e.preventDefault()
-    setCopied(true)
+    e.preventDefault();
+    setCopied(true);
     setTimeout(() => {
-      setCopied(false)
-    }, 1200)
-  }
+      setCopied(false);
+    }, 1200);
+  };
 
   // Extract string when `children` has a single string node
-  const childrenArray = Children.toArray(children)
-  const [singleChild] = childrenArray.length === 1 ? childrenArray : []
-  const singleString = typeof singleChild === 'string' ? singleChild : undefined
+  const childrenArray = Children.toArray(children);
+  const [singleChild] = childrenArray.length === 1 ? childrenArray : [];
+  const singleString =
+    typeof singleChild === 'string' ? singleChild : undefined;
 
-  let codeValue = value ?? singleString ?? children
-  codeValue = codeValue?.trimEnd?.() ?? codeValue
+  let codeValue = value ?? singleString ?? children;
+  codeValue = codeValue?.trimEnd?.() ?? codeValue;
 
   // check the length of the string inside the <code> tag
   // if it's fewer than 70 characters, add a white-space: pre so it doesn't wrap
   const shortCodeBlockClasses =
     typeof codeValue === 'string' && codeValue.length < 70
       ? 'short-inline-codeblock px-1.5 py-0.5 text-stone-800 bg-stone-200 rounded-md'
-      : ''
+      : '';
 
   let lang = language
     ? language
     : className
     ? className.replace('language-', '')
-    : 'js'
+    : 'js';
   // force jsx to be js highlighted
-  if (lang === 'jsx') lang = 'js'
-  SyntaxHighlighter.registerLanguage('js', js)
-  SyntaxHighlighter.registerLanguage('ts', ts)
-  SyntaxHighlighter.registerLanguage('py', py)
-  SyntaxHighlighter.registerLanguage('sql', sql)
-  SyntaxHighlighter.registerLanguage('bash', bash)
-  SyntaxHighlighter.registerLanguage('dart', dart)
-  SyntaxHighlighter.registerLanguage('csharp', csharp)
-  SyntaxHighlighter.registerLanguage('json', json)
-  SyntaxHighlighter.registerLanguage('kotlin', kotlin)
+  if (lang === 'jsx') lang = 'js';
+  SyntaxHighlighter.registerLanguage('js', js);
+  SyntaxHighlighter.registerLanguage('ts', ts);
+  SyntaxHighlighter.registerLanguage('py', py);
+  SyntaxHighlighter.registerLanguage('sql', sql);
+  SyntaxHighlighter.registerLanguage('bash', bash);
+  SyntaxHighlighter.registerLanguage('dart', dart);
+  SyntaxHighlighter.registerLanguage('csharp', csharp);
+  SyntaxHighlighter.registerLanguage('json', json);
+  SyntaxHighlighter.registerLanguage('kotlin', kotlin);
 
-  const large = false
+  const large = false;
   // don't show line numbers if bash == lang
-  if (lang !== 'bash') hideLineNumbers = true
-  const showLineNumbers = !hideLineNumbers
+  if (lang !== 'bash') hideLineNumbers = true;
+  const showLineNumbers = !hideLineNumbers;
 
   return (
     <>
@@ -130,9 +131,9 @@ export const CodeBlock = ({
                     display: 'block',
                     backgroundColor: 'var(--colors-scale6)',
                   },
-                }
+                };
               }
-              return {}
+              return {};
             }}
             lineNumberContainerStyle={{
               paddingTop: '128px',
@@ -185,5 +186,5 @@ export const CodeBlock = ({
         <code className={shortCodeBlockClasses}>{value || children}</code>
       )}
     </>
-  )
-}
+  );
+};

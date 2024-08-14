@@ -1,6 +1,6 @@
-import Link from 'next/link'
+import Link from 'next/link';
 
-import Container from '@/components/ui/Container'
+import Container from '@/components/ui/Container';
 
 export default function NotFound() {
   return (
@@ -23,5 +23,5 @@ export default function NotFound() {
         </Link>
       </div>
     </Container>
-  )
+  );
 }

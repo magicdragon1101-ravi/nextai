@@ -111,5 +111,5 @@ export const markdownTheme = (isDarkMode: boolean) => {
     'hljs-selector-id': {
       fontWeight: 'normal',
     },
-  }
-}
+  };
+};

@@ -1,58 +1,58 @@
-'use client'
+'use client';
 
-import * as React from 'react'
-import { MouseEventHandler, useRef, useState } from 'react'
-import { useCompletion } from 'ai/react'
-import { Frown, RotateCcw } from 'lucide-react'
-import { questions } from '@/config/questions'
-import ReactMarkdown from 'react-markdown'
-import remarkGfm from 'remark-gfm'
-import { markdownComponents } from '@/components/ui/MarkdownComponents'
-import Image from 'next/image'
+import * as React from 'react';
+import { MouseEventHandler, useRef, useState } from 'react';
+import { useCompletion } from 'ai/react';
+import { Frown, RotateCcw } from 'lucide-react';
+import { questions } from '@/config/questions';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import { markdownComponents } from '@/components/ui/MarkdownComponents';
+import Image from 'next/image';
 
 export default function SearchBox() {
-  const [query, setQuery] = useState<string>('')
-  const [displayedQuestions, setDisplayedQuestions] = useState<boolean>(true)
+  const [query, setQuery] = useState<string>('');
+  const [displayedQuestions, setDisplayedQuestions] = useState<boolean>(true);
 
   const { complete, completion, isLoading, stop, error } = useCompletion({
     api: '/api/vector-search',
-  })
-  const inputRef = useRef<HTMLInputElement>(null)
+  });
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const hideMobileKeyboardOnReturn = (
     e: React.KeyboardEvent<HTMLInputElement>
   ) => {
-    const key = e.key
+    const key = e.key;
     if (key === 'Enter' || key === '13') {
-      if (!query) return inputRef.current?.focus()
-      e.currentTarget.blur()
-      setDisplayedQuestions(false)
-      void complete(query)
+      if (!query) return inputRef.current?.focus();
+      e.currentTarget.blur();
+      setDisplayedQuestions(false);
+      void complete(query);
     }
-  }
+  };
 
   const handleSubmit: React.FormEventHandler<HTMLFormElement> = (e) => {
-    e.preventDefault()
-    stop()
-    if (!query) return inputRef.current?.focus()
-    setDisplayedQuestions(false)
-    void complete(query)
-  }
+    e.preventDefault();
+    stop();
+    if (!query) return inputRef.current?.focus();
+    setDisplayedQuestions(false);
+    void complete(query);
+  };
 
   const handleQuestion = (question: string) => {
-    if (!question) return inputRef.current?.focus()
-    setQuery(question)
-    setDisplayedQuestions(false)
-    void complete(question)
-  }
+    if (!question) return inputRef.current?.focus();
+    setQuery(question);
+    setDisplayedQuestions(false);
+    void complete(question);
+  };
 
   const handleClean: MouseEventHandler<HTMLButtonElement> = (e) => {
-    e.preventDefault()
-    stop()
-    setDisplayedQuestions(true)
-    setQuery('')
-    inputRef.current?.focus()
-  }
+    e.preventDefault();
+    stop();
+    setDisplayedQuestions(true);
+    setQuery('');
+    inputRef.current?.focus();
+  };
 
   return (
     <>
@@ -71,7 +71,7 @@ export default function SearchBox() {
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   onKeyDown={hideMobileKeyboardOnReturn}
-                  className="group block h-full w-full bg-transparent py-2 pl-6 pr-4 text-base text-slate-900 placeholder:text-[0.8rem] placeholder:text-slate-400 focus:outline-none sm:py-4 sm:placeholder:text-base"
+                  className="placeholder:text-[0.8rem] group block h-full w-full bg-transparent py-2 pl-6 pr-4 text-base text-slate-900 placeholder:text-slate-400 focus:outline-none sm:py-4 sm:placeholder:text-base"
                 />
                 <button type="submit" className="mr-6">
                   <Image
@@ -136,8 +136,8 @@ export default function SearchBox() {
             )}
             {completion && !error && !displayedQuestions ? (
               <div>
-                <div className="mb-6 [overflow-anchor:none]">
-                  <div className="mb-6 flex flex-col items-center gap-6 [overflow-anchor:none] sm:flex-row sm:items-start">
+                <div className="[overflow-anchor:none] mb-6">
+                  <div className="[overflow-anchor:none] mb-6 flex flex-col items-center gap-6 sm:flex-row sm:items-start">
                     <>
                       <button
                         onClick={handleClean}
@@ -151,14 +151,14 @@ export default function SearchBox() {
                         linkTarget="_blank"
                         className="prose dark:prose-dark max-w-full space-y-4"
                         transformLinkUri={(href) => {
-                          const nextUrl = new URL('https://nextjs.org')
-                          const linkUrl = new URL(href, 'https://nextjs.org')
+                          const nextUrl = new URL('https://nextjs.org');
+                          const linkUrl = new URL(href, 'https://nextjs.org');
 
                           if (linkUrl.origin === nextUrl.origin) {
-                            return linkUrl.toString()
+                            return linkUrl.toString();
                           }
 
-                          return href
+                          return href;
                         }}
                       >
                         {completion}
@@ -172,5 +172,5 @@ export default function SearchBox() {
         </form>
       </div>
     </>
-  )
+  );
 }
